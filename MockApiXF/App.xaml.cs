@@ -1,11 +1,11 @@
-﻿using System;
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
-
-namespace MockApiXF
+﻿namespace MockApiXF
 {
+    using Xamarin.Forms;
+
     public partial class App : Application
     {
+        public static INavigation Nav { get; set; }
+
         public App()
         {
             InitializeComponent();

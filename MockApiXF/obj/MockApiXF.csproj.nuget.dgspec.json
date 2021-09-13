@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/jorgemht/Projects/MockApiXF/MockApiXF/MockApiXF.csproj": {}
+    "/Users/jorgemht/My Drive/Proyectos/Charlas/Xamarin/MockApiXF/MockApiXF/MockApiXF.csproj": {}
   },
   "projects": {
-    "/Users/jorgemht/Projects/MockApiXF/MockApiXF/MockApiXF.csproj": {
+    "/Users/jorgemht/My Drive/Proyectos/Charlas/Xamarin/MockApiXF/MockApiXF/MockApiXF.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jorgemht/Projects/MockApiXF/MockApiXF/MockApiXF.csproj",
+        "projectUniqueName": "/Users/jorgemht/My Drive/Proyectos/Charlas/Xamarin/MockApiXF/MockApiXF/MockApiXF.csproj",
         "projectName": "MockApiXF",
-        "projectPath": "/Users/jorgemht/Projects/MockApiXF/MockApiXF/MockApiXF.csproj",
+        "projectPath": "/Users/jorgemht/My Drive/Proyectos/Charlas/Xamarin/MockApiXF/MockApiXF/MockApiXF.csproj",
         "packagesPath": "/Users/jorgemht/.nuget/packages/",
-        "outputPath": "/Users/jorgemht/Projects/MockApiXF/MockApiXF/obj/",
+        "outputPath": "/Users/jorgemht/My Drive/Proyectos/Charlas/Xamarin/MockApiXF/MockApiXF/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/jorgemht/.config/NuGet/NuGet.Config"
@@ -44,6 +44,10 @@
               "version": "[2.0.3, )",
               "autoReferenced": true
             },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.1, )"
+            },
             "Xamarin.Essentials": {
               "target": "Package",
               "version": "[1.7.0, )"
@@ -63,7 +67,7 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "runtimeIdentifierGraphPath": "/Users/jorgemht/Library/Caches/VisualStudio/8.0/MSBuild/80460_1/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/Users/jorgemht/Library/Caches/VisualStudio/8.0/MSBuild/83995_1/RuntimeIdentifierGraph.json"
         }
       }
     }
