@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "E27RcUcr77vcWTb0VTqdinzrMr+GuXUFW+GwPLiwNYJBVSNxWnwow9BfriijhCOxZQsnCIURS1wc9aSgc39+dQ==",
+  "success": true,
+  "projectFilePath": "/Users/jorgemht/Projects/MockApiXF/MockApiXF/MockApiXF.csproj",
+  "expectedPackageFiles": [
+    "/Users/jorgemht/.nuget/packages/microsoft.netcore.platforms/1.1.0/microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "/Users/jorgemht/.nuget/packages/netstandard.library/2.0.3/netstandard.library.2.0.3.nupkg.sha512",
+    "/Users/jorgemht/.nuget/packages/system.numerics.vectors/4.5.0/system.numerics.vectors.4.5.0.nupkg.sha512",
+    "/Users/jorgemht/.nuget/packages/xamarin.essentials/1.7.0/xamarin.essentials.1.7.0.nupkg.sha512",
+    "/Users/jorgemht/.nuget/packages/xamarin.forms/5.0.0.2083/xamarin.forms.5.0.0.2083.nupkg.sha512"
+  ],
+  "logs": []
+}
