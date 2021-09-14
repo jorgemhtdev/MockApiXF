@@ -27,6 +27,7 @@
     <None Remove="Services\" />
     <None Remove="Services\ApiService\" />
     <None Remove="Newtonsoft.Json" />
+    <None Remove="Mocks\comics.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Base\" />
@@ -37,5 +38,8 @@
     <Folder Include="Models\CustomErros\" />
     <Folder Include="Services\" />
     <Folder Include="Services\ApiService\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Mocks\comics.json" />
   </ItemGroup>
 </Project>

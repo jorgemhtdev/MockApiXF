@@ -1,5 +1,7 @@
 ﻿namespace MockApiXF.Services
 {
+    using MockApiXF.Extension;
+    using MockApiXF.Models;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Specialized;
@@ -21,9 +23,9 @@
 
         private CancellationTokenSource cts;
 
-        private readonly string hostMock = "https://httpstat.us/";
+        private readonly string hostMock = string.Empty;
         private readonly string hostMockError = "https://httpstat.us/";
-        private readonly string hostDev = string.Empty;
+        private readonly string hostDev = $"https://raw.githubusercontent.com/jorgemhtdev/comic-json/master/comics.json";
         private readonly string hostPre = string.Empty;
         private readonly string hostPro = string.Empty;
 
@@ -65,7 +67,10 @@
 
             try
             {
-                uri = ToQueryString(nvc);
+                if(nvc != null)
+                {
+                    uri = ToQueryString(nvc);
+                }
 
                 if (auth)
                 {
@@ -89,28 +94,46 @@
                     string data = await response.Content.ReadAsStringAsync();
                     throw jr.error = new ApiException()
                     {
-                        Content = Regex.Unescape(data),
+                        Content = data,
                         StatusCode = response.StatusCode,
-                        Uri = $"Get: {uri}. {Regex.Unescape(data)}"
+                        Uri = $"Get: {uri}"
                     };
                 }
             }
             catch (OperationCanceledException operationCanceledException)
             {
                 cts.Cancel();
-                throw operationCanceledException;
+
+                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
+                {
+                    Exception = operationCanceledException,
+                    Uri = $"Get: {uri}"
+                });
             }
             catch (ApiException apiException)
             {
-                throw apiException;
+                switch (apiException.StatusCode)
+                {
+                    case System.Net.HttpStatusCode.BadRequest:
+                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.NotFound:
+                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.InternalServerError:
+                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
+
+                    default:
+                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
+                }
             }
             catch (Exception exception)
             {
-                throw jr.error = new ApiException()
+                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
                 {
                     Exception = exception,
                     Uri = $"Get: {uri}"
-                };
+                });
             }
             finally
             {
@@ -175,23 +198,37 @@
             catch (OperationCanceledException operationCanceledException)
             {
                 cts.Cancel();
-                throw operationCanceledException;
+
+                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
+                {
+                    Exception = operationCanceledException,
+                    Uri = $"Get: {uri}"
+                });
             }
             catch (ApiException apiException)
             {
-                throw apiException;
+                switch (apiException.StatusCode)
+                {
+                    case System.Net.HttpStatusCode.BadRequest:
+                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.NotFound:
+                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.InternalServerError:
+                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
+
+                    default:
+                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
+                }
             }
             catch (Exception exception)
             {
-                throw outObject.error = new ApiException()
+                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
                 {
                     Exception = exception,
                     Uri = $"Get: {uri}"
-                };
-            }
-            finally
-            {
-                cts.Dispose();
+                });
             }
 
             return outObject;
@@ -231,18 +268,40 @@
                     };
                 }
             }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                cts.Cancel();
+
+                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
+                {
+                    Exception = operationCanceledException,
+                    Uri = $"Get: {uri}"
+                });
+            }
             catch (ApiException apiException)
             {
-                throw apiException;
+                switch (apiException.StatusCode)
+                {
+                    case System.Net.HttpStatusCode.BadRequest:
+                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.NotFound:
+                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.InternalServerError:
+                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
+
+                    default:
+                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
+                }
             }
             catch (Exception exception)
             {
-                jr.error.Uri = $"Update: {uri}. {exception.ToString()}";
-                throw jr.error;
-            }
-            finally
-            {
-                cts.Cancel();
+                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
+                {
+                    Exception = exception,
+                    Uri = $"Get: {uri}"
+                });
             }
 
             return jr;
@@ -287,18 +346,40 @@
                     };
                 }
             }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                cts.Cancel();
+
+                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
+                {
+                    Exception = operationCanceledException,
+                    Uri = $"Get: {uri}"
+                });
+            }
             catch (ApiException apiException)
             {
-                throw apiException;
+                switch (apiException.StatusCode)
+                {
+                    case System.Net.HttpStatusCode.BadRequest:
+                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.NotFound:
+                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.InternalServerError:
+                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
+
+                    default:
+                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
+                }
             }
             catch (Exception exception)
             {
-                jr.error.Uri = $"Update: {uri}. {exception.ToString()}";
-                throw jr.error;
-            }
-            finally
-            {
-                cts.Cancel();
+                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
+                {
+                    Exception = exception,
+                    Uri = $"Get: {uri}"
+                });
             }
 
             return jr;
@@ -337,18 +418,40 @@
                     };
                 }
             }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                cts.Cancel();
+
+                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
+                {
+                    Exception = operationCanceledException,
+                    Uri = $"Get: {uri}"
+                });
+            }
             catch (ApiException apiException)
             {
-                throw apiException;
+                switch (apiException.StatusCode)
+                {
+                    case System.Net.HttpStatusCode.BadRequest:
+                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.NotFound:
+                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
+
+                    case System.Net.HttpStatusCode.InternalServerError:
+                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
+
+                    default:
+                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
+                }
             }
             catch (Exception exception)
             {
-                jr.error.Uri = $"Delete: {uri}. {exception.ToString()}";
-                throw jr.error;
-            }
-            finally
-            {
-                cts.Cancel();
+                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
+                {
+                    Exception = exception,
+                    Uri = $"Get: {uri}"
+                });
             }
         }
 
@@ -369,11 +472,10 @@
                 {
                     return false;
                 }
-
             }
             catch (Exception exception)
             {
-                return false;
+                throw new Exception(ExcepcionesEnum.ErrorSinConexion.ToDescriptionString(), exception);
             }
         }
     }

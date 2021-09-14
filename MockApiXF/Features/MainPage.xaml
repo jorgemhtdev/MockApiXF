@@ -3,37 +3,50 @@
     x:Class="MockApiXF.MainPage"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MockApiXF">
+    xmlns:local="clr-namespace:MockApiXF"
+    BackgroundColor="Navy">
     <ContentPage.Content>
-        <StackLayout>
-            <CollectionView x:Name="CV">
+        <StackLayout Margin="20" Spacing="10">
+
+            <!--  https://www.meetup.com/es-ES/Xamarin-Madrid/events/280336302/  -->
+            <Label
+                FontSize="Medium"
+                Text="No esperes al equipo Backend. Mocking tu aplicación en Xamarin Forms"
+                TextColor="White" />
+
+            <CollectionView ItemsSource="{Binding ComicsCollection}">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout ItemSpacing="20" Orientation="Vertical" />
+                </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Padding="10">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Image
-                                Grid.RowSpan="2"
-                                Aspect="AspectFill"
-                                HeightRequest="60"
-                                Source="{Binding ImageUrl}"
-                                WidthRequest="60" />
-                            <Label
-                                Grid.Column="1"
-                                FontAttributes="Bold"
-                                Text="{Binding Name}" />
-                            <Label
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                FontAttributes="Italic"
-                                Text="{Binding Location}"
-                                VerticalOptions="End" />
+                        <Grid>
+                            <Frame CornerRadius="10" Opacity="0.5" />
+
+                            <StackLayout Margin="8" Spacing="15">
+                                <Label
+                                    FontSize="Body"
+                                    Text="{Binding Nombre}"
+                                    TextColor="DarkBlue" />
+                                <Image
+                                    HeightRequest="280"
+                                    Source="{Binding ProductImage}"
+                                    WidthRequest="280" />
+                                <Label
+                                    FontSize="Small"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="3"
+                                    Text="{Binding Desc}"
+                                    TextColor="White" />
+                                <Button
+                                    BackgroundColor="Navy"
+                                    CornerRadius="10"
+                                    HeightRequest="50"
+                                    HorizontalOptions="Center"
+                                    Text="Leer más"
+                                    TextColor="White"
+                                    WidthRequest="180" />
+                            </StackLayout>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

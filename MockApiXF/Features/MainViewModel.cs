@@ -12,18 +12,18 @@
     {
         Comic comic;
 
-        public ObservableCollection<Comic> comicCollection;
+        public ObservableCollection<Comic> ComicsCollection { get; set; }
 
-        public MainViewModel() { }
+        public MainViewModel() {}
 
-        public async Task OnAppearing()
+        public async override Task OnAppearingAsync()
         {
             try
             {
                 comic = new Comic();
 
                 IEnumerable<Comic> listaComic = await comic.CargarComics();
-                comicCollection = new ObservableCollection<Comic>(listaComic);
+                ComicsCollection = new ObservableCollection<Comic>(listaComic);
             }
             catch (Exception exception)
             {
