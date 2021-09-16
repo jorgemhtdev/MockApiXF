@@ -10,7 +10,6 @@
     using System.Net.Http.Headers;
     using System.Net.NetworkInformation;
     using System.Text;
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Web;
@@ -23,9 +22,9 @@
 
         private CancellationTokenSource cts;
 
-        private readonly string hostMock = string.Empty;
+        private readonly string hostMock = "https://YOURID.mock.pstmn.io/";
         private readonly string hostMockError = "https://httpstat.us/";
-        private readonly string hostDev = $"https://raw.githubusercontent.com/jorgemhtdev/comic-json/master/comics.json";
+        private readonly string hostDev = $"https://raw.githubusercontent.com/jorgemhtdev/comic-json/master/";
         private readonly string hostPre = string.Empty;
         private readonly string hostPro = string.Empty;
 
@@ -46,12 +45,7 @@
             };
 
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
 
-            // Ignorarlos null, 
-            // 
-            // ignorar para que los valores de bucle se excluyan de la serialización en lugar de lanzar una excepción.
-            // https://stackoverflow.com/questions/23453977/what-is-the-difference-between-preservereferenceshandling-and-referenceloophandl/23461179   
             jsonSerializerSettings = new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore,
@@ -63,13 +57,13 @@
 
         public async Task<ResponseService<Tout>> Get<Tout>(string uri, NameValueCollection? nvc, TimeSpan timeout, bool auth = true)
         {
-            ResponseService<Tout> jr = new ResponseService<Tout>();
+            ResponseService<Tout> responseService = new ResponseService<Tout>();
 
             try
             {
                 if(nvc != null)
                 {
-                    uri = ToQueryString(nvc);
+                    uri += ToQueryString(nvc);
                 }
 
                 if (auth)
@@ -80,19 +74,19 @@
                 cts = new CancellationTokenSource();
                 cts.CancelAfter(timeout);
 
-                HttpResponseMessage response = await httpClient.GetAsync(uri)
+                HttpResponseMessage response = await httpClient.GetAsync(uri, cts.Token)
                                                            .ConfigureAwait(false);
 
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    jr.IsSuccessStatusCode = true;
-                    jr.ToModel(data);
+                    responseService.IsSuccessStatusCode = true;
+                    responseService.ToModel(data);
                 }
                 else
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    throw jr.error = new ApiException()
+                    throw responseService.error = new ApiException()
                     {
                         Content = data,
                         StatusCode = response.StatusCode,
@@ -104,57 +98,24 @@
             {
                 cts.Cancel();
 
-                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
-                {
-                    Exception = operationCanceledException,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarOperationCanceledException(operationCanceledException, $"Get: {uri}");
             }
             catch (ApiException apiException)
             {
-                switch (apiException.StatusCode)
-                {
-                    case System.Net.HttpStatusCode.BadRequest:
-                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.NotFound:
-                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.InternalServerError:
-                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
-
-                    default:
-                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
-                }
+                ElevarApiExceptionException(apiException);
             }
             catch (Exception exception)
             {
-                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
-                {
-                    Exception = exception,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarException(exception, $"Get: {uri}");
             }
             finally
             {
                 cts.Dispose();
             }
 
-            return jr;
+            return responseService;
         }
 
-        private string ToQueryString(NameValueCollection nvc)
-        {
-            string[] array = (
-                from key in nvc.AllKeys
-                from value in nvc.GetValues(key)
-                select string.Format(
-            "{0}={1}",
-            HttpUtility.UrlEncode(key),
-            HttpUtility.UrlEncode(value))
-                ).ToArray();
-            return "?" + string.Join("&", array);
-        }
         public async Task<ResponseService<Tout>> Post<TIn, Tout>(TIn root, string uri, TimeSpan timeout, bool auth = true)
         {
             ResponseService<Tout> outObject = new ResponseService<Tout>();
@@ -191,7 +152,7 @@
                     {
                         Content = await response.Content.ReadAsStringAsync(),
                         StatusCode = response.StatusCode,
-                        Uri = $"Post: {uri}. {Regex.Unescape(data)}"
+                        Uri = $"Post: {uri}"
                     };
                 }
             }
@@ -199,36 +160,19 @@
             {
                 cts.Cancel();
 
-                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
-                {
-                    Exception = operationCanceledException,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarOperationCanceledException(operationCanceledException, $"Post: {uri}");
             }
             catch (ApiException apiException)
             {
-                switch (apiException.StatusCode)
-                {
-                    case System.Net.HttpStatusCode.BadRequest:
-                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.NotFound:
-                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.InternalServerError:
-                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
-
-                    default:
-                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
-                }
+                ElevarApiExceptionException(apiException);
             }
             catch (Exception exception)
             {
-                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
-                {
-                    Exception = exception,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarException(exception, $"Post: {uri}");
+            }
+            finally
+            {
+                cts.Dispose();
             }
 
             return outObject;
@@ -236,7 +180,7 @@
 
         public async Task<ResponseService<Tout>> Update<Tout>(string uri, TimeSpan timeout, bool auth = false)
         {
-            ResponseService<Tout> jr = new ResponseService<Tout>();
+            ResponseService<Tout> responseService = new ResponseService<Tout>();
 
             try
             {
@@ -254,17 +198,17 @@
                 if (response.IsSuccessStatusCode == true)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    jr.IsSuccessStatusCode = true;
-                    jr.model = JsonConvert.DeserializeObject<Tout>(data, jsonSerializerSettings);
+                    responseService.IsSuccessStatusCode = true;
+                    responseService.model = JsonConvert.DeserializeObject<Tout>(data, jsonSerializerSettings);
                 }
                 else
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    throw jr.error = new ApiException()
+                    throw responseService.error = new ApiException()
                     {
                         Content = await response.Content.ReadAsStringAsync(),
                         StatusCode = response.StatusCode,
-                        Uri = $"Update: {uri}. {Regex.Unescape(data)}"
+                        Uri = $"Update: {uri}"
                     };
                 }
             }
@@ -272,44 +216,27 @@
             {
                 cts.Cancel();
 
-                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
-                {
-                    Exception = operationCanceledException,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarOperationCanceledException(operationCanceledException, $"Update: {uri}");
             }
             catch (ApiException apiException)
             {
-                switch (apiException.StatusCode)
-                {
-                    case System.Net.HttpStatusCode.BadRequest:
-                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.NotFound:
-                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.InternalServerError:
-                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
-
-                    default:
-                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
-                }
+                ElevarApiExceptionException(apiException);
             }
             catch (Exception exception)
             {
-                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
-                {
-                    Exception = exception,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarException(exception, $"Update: {uri}");
+            }
+            finally
+            {
+                cts.Dispose();
             }
 
-            return jr;
+            return responseService;
         }
 
         public async Task<ResponseService<Tout>> Update<Tout>(Tout root, string uri, TimeSpan timeout, bool auth = false)
         {
-            ResponseService<Tout> jr = new ResponseService<Tout>();
+            ResponseService<Tout> responseService = new ResponseService<Tout>();
 
             try
             {
@@ -318,9 +245,9 @@
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
                 }
 
-                jr.model = root;
+                responseService.model = root;
 
-                StringContent content = new StringContent(jr.ToString(), Encoding.UTF8, "application/json");
+                StringContent content = new StringContent(responseService.ToString(), Encoding.UTF8, "application/json");
 
                 cts = new CancellationTokenSource();
                 cts.CancelAfter(timeout);
@@ -331,18 +258,18 @@
                 if (response.IsSuccessStatusCode == true)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    jr.IsSuccessStatusCode = true;
-                    jr.model = JsonConvert.DeserializeObject<Tout>(data, jsonSerializerSettings);
+                    responseService.IsSuccessStatusCode = true;
+                    responseService.model = JsonConvert.DeserializeObject<Tout>(data, jsonSerializerSettings);
                 }
                 else
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    throw jr.error = new ApiException()
+                    throw responseService.error = new ApiException()
                     {
                         Content = await response.Content.ReadAsStringAsync(),
                         StatusCode = response.StatusCode,
-                        Json = jr.ToString(),
-                        Uri = $"Update: {uri}. {Regex.Unescape(data)}"
+                        Json = responseService.ToString(),
+                        Uri = $"Update: {uri}"
                     };
                 }
             }
@@ -350,44 +277,27 @@
             {
                 cts.Cancel();
 
-                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
-                {
-                    Exception = operationCanceledException,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarOperationCanceledException(operationCanceledException, $"Update: {uri}");
             }
             catch (ApiException apiException)
             {
-                switch (apiException.StatusCode)
-                {
-                    case System.Net.HttpStatusCode.BadRequest:
-                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.NotFound:
-                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.InternalServerError:
-                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
-
-                    default:
-                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
-                }
+                ElevarApiExceptionException(apiException);
             }
             catch (Exception exception)
             {
-                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
-                {
-                    Exception = exception,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarException(exception, $"Update: {uri}");
+            }
+            finally
+            {
+                cts.Dispose();
             }
 
-            return jr;
+            return responseService;
         }
 
         public async Task<ResponseService<bool>> Delete(string uri, CancellationToken cancellationToken, bool auth = false)
         {
-            ResponseService<bool> jr = new ResponseService<bool>();
+            ResponseService<bool> responseService = new ResponseService<bool>();
 
             try
             {
@@ -401,20 +311,20 @@
 
                 if (response.IsSuccessStatusCode)
                 {
-                    jr.model = true;
-                    jr.IsSuccessStatusCode = true;
-                    return jr;
+                    responseService.model = true;
+                    responseService.IsSuccessStatusCode = true;
+                    return responseService;
                 }
                 else
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    jr.model = false;
+                    responseService.model = false;
 
-                    throw jr.error = new ApiException()
+                    throw responseService.error = new ApiException()
                     {
                         Content = await response.Content.ReadAsStringAsync(),
                         StatusCode = response.StatusCode,
-                        Uri = $"Delete: {uri}. {Regex.Unescape(data)}"
+                        Uri = $"Delete: {uri}"
                     };
                 }
             }
@@ -422,37 +332,22 @@
             {
                 cts.Cancel();
 
-                throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
-                {
-                    Exception = operationCanceledException,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarOperationCanceledException(operationCanceledException, $"Delete: {uri}");
             }
             catch (ApiException apiException)
             {
-                switch (apiException.StatusCode)
-                {
-                    case System.Net.HttpStatusCode.BadRequest:
-                        throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.NotFound:
-                        throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
-
-                    case System.Net.HttpStatusCode.InternalServerError:
-                        throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
-
-                    default:
-                        throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
-                }
+                ElevarApiExceptionException(apiException);
             }
             catch (Exception exception)
             {
-                throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
-                {
-                    Exception = exception,
-                    Uri = $"Get: {uri}"
-                });
+                ElevarException(exception, $"Delete: {uri}");
             }
+            finally
+            {
+                cts.Dispose();
+            }
+
+            return responseService;
         }
 
         public async Task<bool> PingAsync()
@@ -477,6 +372,58 @@
             {
                 throw new Exception(ExcepcionesEnum.ErrorSinConexion.ToDescriptionString(), exception);
             }
+        }
+
+        private Exception ElevarOperationCanceledException(OperationCanceledException operationCanceledException, string uri)
+        {
+            throw new Exception(ExcepcionesEnum.TimeOut.ToDescriptionString(), new ApiException()
+            {
+                Exception = operationCanceledException,
+                Uri = uri
+            });
+        }
+
+        private Exception ElevarApiExceptionException(ApiException apiException)
+        {
+            switch (apiException.StatusCode)
+            {
+                case System.Net.HttpStatusCode.BadRequest:
+                    throw new Exception(ErrorApiEnum.Error400BadRequest.ToDescriptionString(), apiException);
+
+                case System.Net.HttpStatusCode.NotFound:
+                    throw new Exception(ErrorApiEnum.Error403Forbidden.ToDescriptionString(), apiException);
+
+                case System.Net.HttpStatusCode.RequestTimeout:
+                    throw new Exception(ErrorApiEnum.Error408TimeOut.ToDescriptionString(), apiException);
+
+                case System.Net.HttpStatusCode.InternalServerError:
+                    throw new Exception(ErrorApiEnum.Error500InternalServerError.ToDescriptionString(), apiException);
+
+                default:
+                    throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), apiException);
+            }
+        }
+
+        private Exception ElevarException(Exception exception, string uri)
+        {
+            throw new Exception(ExcepcionesEnum.Error.ToDescriptionString(), new ApiException()
+            {
+                Exception = exception,
+                Uri = uri
+            });
+        }
+
+        private string ToQueryString(NameValueCollection nvc)
+        {
+            string[] array = (
+                from key in nvc.AllKeys
+                from value in nvc.GetValues(key)
+                select string.Format(
+            "{0}={1}",
+            HttpUtility.UrlEncode(key),
+            HttpUtility.UrlEncode(value))
+                ).ToArray();
+            return "?" + string.Join("&", array);
         }
     }
 }
